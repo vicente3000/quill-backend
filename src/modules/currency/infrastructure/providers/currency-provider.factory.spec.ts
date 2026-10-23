@@ -3,6 +3,7 @@ import { CurrencyProviderFactory } from './currency-provider.factory';
 describe('CurrencyProviderFactory', () => {
   const mockProvider = { getName: () => 'mock' };
   const exchangeRateProvider = { getName: () => 'exchangeRate' };
+  const yahooProvider = { getName: () => 'yahooFinance' };
   const noneProvider = { getName: () => 'none' };
 
   it('creates mock provider', () => {
@@ -10,6 +11,7 @@ describe('CurrencyProviderFactory', () => {
       'mock',
       mockProvider as never,
       exchangeRateProvider as never,
+      yahooProvider as never,
       noneProvider as never,
     );
     expect(result.getName()).toBe('mock');
@@ -20,6 +22,7 @@ describe('CurrencyProviderFactory', () => {
       'exchangeRate',
       mockProvider as never,
       exchangeRateProvider as never,
+      yahooProvider as never,
       noneProvider as never,
     );
     expect(result.getName()).toBe('exchangeRate');
@@ -30,6 +33,7 @@ describe('CurrencyProviderFactory', () => {
       'none',
       mockProvider as never,
       exchangeRateProvider as never,
+      yahooProvider as never,
       noneProvider as never,
     );
     expect(result.getName()).toBe('none');
@@ -40,6 +44,7 @@ describe('CurrencyProviderFactory', () => {
       '',
       mockProvider as never,
       exchangeRateProvider as never,
+      yahooProvider as never,
       noneProvider as never,
     );
     expect(result.getName()).toBe('none');
@@ -50,6 +55,7 @@ describe('CurrencyProviderFactory', () => {
       undefined,
       mockProvider as never,
       exchangeRateProvider as never,
+      yahooProvider as never,
       noneProvider as never,
     );
     expect(result.getName()).toBe('none');
@@ -60,6 +66,7 @@ describe('CurrencyProviderFactory', () => {
       '  mock  ',
       mockProvider as never,
       exchangeRateProvider as never,
+      yahooProvider as never,
       noneProvider as never,
     );
     expect(result.getName()).toBe('mock');
@@ -71,8 +78,20 @@ describe('CurrencyProviderFactory', () => {
         'unknown',
         mockProvider as never,
         exchangeRateProvider as never,
+        yahooProvider as never,
         noneProvider as never,
       ),
     ).toThrow(/Unknown currency provider/);
+  });
+
+  it('creates yahoo provider', () => {
+    const result = CurrencyProviderFactory.createProvider(
+      'yahoo',
+      mockProvider as never,
+      exchangeRateProvider as never,
+      yahooProvider as never,
+      noneProvider as never,
+    );
+    expect(result.getName()).toBe('yahooFinance');
   });
 });

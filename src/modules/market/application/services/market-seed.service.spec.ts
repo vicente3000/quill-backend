@@ -1,4 +1,3 @@
-import { ConfigService } from '@nestjs/config';
 import { MarketSeedService } from './market-seed.service';
 import { Logger } from '@nestjs/common';
 
@@ -19,29 +18,20 @@ describe('MarketSeedService', () => {
   let service: MarketSeedService;
   let internals: MarketSeedInternals;
   let stockModel: { find: jest.Mock; insertMany: jest.Mock };
-  let snapshotModel: { insertMany: jest.Mock };
   let provider: { getName: jest.Mock; getSeedData: jest.Mock };
-  let configService: { get: jest.Mock };
 
   beforeEach(() => {
     stockModel = {
       find: jest.fn(),
       insertMany: jest.fn().mockResolvedValue([]),
     };
-    snapshotModel = {
-      insertMany: jest.fn().mockResolvedValue([]),
-    };
     provider = {
       getName: jest.fn().mockReturnValue('mock'),
       getSeedData: jest.fn(),
     };
-    configService = { get: jest.fn() };
-
     service = new MarketSeedService(
       stockModel as never,
-      snapshotModel as never,
       provider as never,
-      configService as unknown as ConfigService,
     );
     internals = service as unknown as MarketSeedInternals;
   });
@@ -96,7 +86,7 @@ describe('MarketSeedService', () => {
       expect(stockModel.insertMany).not.toHaveBeenCalled();
     });
 
-    it('generates historical snapshots for mock provider', async () => {
+    it('does not generate historical snapshots when creating symbols', async () => {
       provider.getSeedData.mockReturnValue([
         { symbol: 'AAPL', name: 'Apple', currency: 'USD', close: 150 },
       ]);
@@ -110,38 +100,7 @@ describe('MarketSeedService', () => {
 
       await service.seedInitialStocks();
 
-      expect(snapshotModel.insertMany).toHaveBeenCalled();
-      const calls = snapshotModel.insertMany.mock
-        .calls as unknown as unknown[][];
-      const snapshots = calls[0][0] as Array<Record<string, unknown>>;
-      expect(snapshots).toHaveLength(24);
-      expect(snapshots[0]).toMatchObject({
-        symbol: 'AAPL',
-        source: 'mock',
-      });
-      expect(typeof snapshots[0].price).toBe('number');
-    });
-
-    it('logs placeholder message for non-mock provider', async () => {
-      provider.getName.mockReturnValue('eodhd');
-      provider.getSeedData.mockReturnValue([
-        { symbol: 'AAPL', name: 'Apple', currency: 'USD', close: 150 },
-      ]);
-      stockModel.find.mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          lean: jest.fn().mockReturnValue({
-            exec: jest.fn().mockResolvedValue([]),
-          }),
-        }),
-      });
-      const logSpy = jest.spyOn(internals.logger, 'log');
-
-      await service.seedInitialStocks();
-
-      expect(snapshotModel.insertMany).not.toHaveBeenCalled();
-      expect(logSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Placeholder records created'),
-      );
+      expect(stockModel.insertMany).toHaveBeenCalledTimes(1);
     });
   });
 

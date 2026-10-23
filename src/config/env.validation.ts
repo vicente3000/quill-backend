@@ -28,7 +28,7 @@ export const envValidationSchema = Joi.object({
   JWT_EXPIRES_IN: Joi.string().default('1d'),
   INITIAL_BALANCE: Joi.number().positive().default(100000),
   COMMISSION_RATE: Joi.number().min(0).max(1).default(0.005),
-  MARKET_PROVIDER: Joi.string().valid('mock', 'eodhd').optional(),
+  MARKET_PROVIDER: Joi.string().valid('mock', 'eodhd', 'yahoo').optional(),
   MARKET_HOURS_OPEN: Joi.string()
     .pattern(/^\d{2}:\d{2}$/)
     .default('09:30'),
@@ -54,8 +54,15 @@ export const envValidationSchema = Joi.object({
   EODHD_DAILY_REFRESH_ENABLED: Joi.boolean().default(true),
   EODHD_DAILY_REFRESH_CRON: Joi.string().default('0 30 18 * * 1-5'),
   EODHD_CACHE_TTL_SECONDS: Joi.number().positive().default(86400),
+  YAHOO_FINANCE_BASE_URL: Joi.string()
+    .uri()
+    .default('https://query1.finance.yahoo.com'),
+  YAHOO_MARKET_SYMBOLS: Joi.string().default('COPEC.SN,CENCOSUD.SN,CHILE.SN'),
+  YAHOO_MARKET_REFRESH_CRON: Joi.string().default('0 */15 9-17 * * 1-5'),
 
-  CURRENCY_PROVIDER: Joi.string().valid('mock', 'exchangeRate').optional(),
+  CURRENCY_PROVIDER: Joi.string()
+    .valid('mock', 'exchangeRate', 'yahoo')
+    .optional(),
   CURRENCY_SIMULATION_STRATEGY: Joi.string()
     .valid('flat', 'gbm', 'nw')
     .default('flat'),
@@ -70,6 +77,8 @@ export const envValidationSchema = Joi.object({
     .uri()
     .default('https://v6.exchangerate-api.com/v6'),
   EXCHANGERATE_REFRESH_CRON: Joi.string().default('0 0 * * * *'),
+  YAHOO_CURRENCY_SYMBOLS: Joi.string().default('USDCLP'),
+  YAHOO_CURRENCY_REFRESH_CRON: Joi.string().default('0 */15 * * * *'),
 
   CURRENCY_SUFFIX_MAP: Joi.string().default('.SN=CLP,.US=USD'),
 });

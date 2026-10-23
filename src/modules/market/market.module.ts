@@ -14,6 +14,7 @@ import { MockMarketDataProvider } from './infrastructure/providers/mock-market-d
 import { NoneMarketDataProvider } from './infrastructure/providers/none-market-data.provider';
 import { FallbackMarketDataProvider } from './infrastructure/providers/fallback-market-data.provider';
 import { MarketDataProviderFactory } from './infrastructure/providers/market-data-provider.factory';
+import { YahooFinanceMarketDataProvider } from './infrastructure/providers/yahoo-finance-market-data.provider';
 import {
   PriceSnapshot,
   PriceSnapshotSchema,
@@ -62,6 +63,7 @@ import {
     MockMarketDataProvider,
     NoneMarketDataProvider,
     EodhdMarketDataProvider,
+    YahooFinanceMarketDataProvider,
     {
       /**
        * Factory provider that selects the active MarketDataProvider
@@ -73,6 +75,7 @@ import {
       inject: [
         MockMarketDataProvider,
         EodhdMarketDataProvider,
+        YahooFinanceMarketDataProvider,
         NoneMarketDataProvider,
         ConfigService,
         AdminConfigService,
@@ -80,6 +83,7 @@ import {
       useFactory: async (
         mockProvider: MockMarketDataProvider,
         eodhdProvider: EodhdMarketDataProvider,
+        yahooProvider: YahooFinanceMarketDataProvider,
         noneProvider: NoneMarketDataProvider,
         configService: ConfigService,
         adminConfigService: AdminConfigService,
@@ -90,14 +94,17 @@ import {
           ? adminConfigProviderName
           : configService.get<string>('MARKET_PROVIDER', 'mock');
 
-        if (providerName === 'eodhd') {
-          return new FallbackMarketDataProvider(eodhdProvider, mockProvider);
+        if (providerName === 'eodhd' || providerName === 'yahoo') {
+          const primary =
+            providerName === 'eodhd' ? eodhdProvider : yahooProvider;
+          return new FallbackMarketDataProvider(primary, mockProvider);
         }
 
         return MarketDataProviderFactory.createProvider(
           providerName,
           mockProvider,
           eodhdProvider,
+          yahooProvider,
           noneProvider,
         );
       },

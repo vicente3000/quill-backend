@@ -9,6 +9,10 @@ import {
   Stock,
   StockDocument,
 } from '../../infrastructure/schemas/stock.schema';
+import {
+  PriceSnapshot,
+  PriceSnapshotDocument,
+} from '../../infrastructure/schemas/price-snapshot.schema';
 import { CacheService } from '../../../system/application/services/cache/cache.service';
 
 const BASE_PRICE_CACHE_PREFIX = 'stock:';
@@ -23,6 +27,8 @@ export class MarketTickService {
 
   constructor(
     @InjectModel(Stock.name) private readonly stockModel: Model<StockDocument>,
+    @InjectModel(PriceSnapshot.name)
+    private readonly snapshotModel: Model<PriceSnapshotDocument>,
     @Inject('MARKET_SIMULATION_STRATEGY')
     private readonly strategy: IMarketSimulationStrategy,
     private readonly cacheService: CacheService,
@@ -47,6 +53,17 @@ export class MarketTickService {
         close: number;
         dayChangePercentage: number;
       }> = [];
+      const snapshots: Array<{
+        symbol: string;
+        price: number;
+        open: number;
+        high: number;
+        low: number;
+        close: number;
+        source: string;
+        createdAt: Date;
+      }> = [];
+      const capturedAt = new Date();
 
       for (const stock of stocks) {
         const basePrice = await this.cacheService.get<number>(
@@ -87,9 +104,20 @@ export class MarketTickService {
           close: nextPrice.toNumber(),
           dayChangePercentage: dayChangePct,
         });
+        snapshots.push({
+          symbol: stock.symbol,
+          price: nextPrice.toNumber(),
+          open: livePrice,
+          high: Math.max(livePrice, nextPrice.toNumber()),
+          low: Math.min(livePrice, nextPrice.toNumber()),
+          close: nextPrice.toNumber(),
+          source: 'simulation',
+          createdAt: capturedAt,
+        });
       }
 
       if (updates.length) {
+        await this.snapshotModel.insertMany(snapshots);
         this.eventEmitter.emit(PRICE_UPDATE_EVENT, updates);
       }
     } finally {

@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 
 const ALLOWED_VALUES: Record<string, readonly string[]> = {
-  MARKET_PROVIDER: ['mock', 'eodhd'],
+  MARKET_PROVIDER: ['mock', 'eodhd', 'yahoo'],
   SIMULATION_STRATEGY: ['flat', 'gbm', 'nw'],
 };
 

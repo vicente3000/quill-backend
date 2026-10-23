@@ -2,6 +2,7 @@ import { MarketDataProvider } from './market-data-provider.interface';
 import { EodhdMarketDataProvider } from './eodhd-market-data.provider';
 import { MockMarketDataProvider } from './mock-market-data.provider';
 import { NoneMarketDataProvider } from './none-market-data.provider';
+import { YahooFinanceMarketDataProvider } from './yahoo-finance-market-data.provider';
 
 /**
  * Factory for creating provider instances based on configuration.
@@ -22,6 +23,7 @@ export class MarketDataProviderFactory {
     providerName: string | undefined,
     mockProvider: MockMarketDataProvider,
     eodhdProvider: EodhdMarketDataProvider,
+    yahooProvider: YahooFinanceMarketDataProvider,
     noneProvider: NoneMarketDataProvider,
   ): MarketDataProvider {
     const normalizedName = providerName?.toLowerCase().trim();
@@ -31,13 +33,15 @@ export class MarketDataProviderFactory {
         return mockProvider;
       case 'eodhd':
         return eodhdProvider;
+      case 'yahoo':
+        return yahooProvider;
       case 'none':
       case '':
       case undefined:
         return noneProvider;
       default:
         throw new Error(
-          `Unknown market provider: "${providerName}". Valid options: "mock", "eodhd"`,
+          `Unknown market provider: "${providerName}". Valid options: "mock", "eodhd", "yahoo"`,
         );
     }
   }

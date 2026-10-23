@@ -46,6 +46,10 @@ describe('MockMarketDataProvider', () => {
       expect(quote.currency).toBe('USD');
       expect(quote.timestamp).toBeInstanceOf(Date);
       expect(quote.exchange).toBe('MOCK');
+      expect(quote.open).toBeGreaterThan(0);
+      expect(quote.high).toBeGreaterThanOrEqual(quote.close!);
+      expect(quote.low).toBeLessThanOrEqual(quote.close!);
+      expect(quote.volume).toBeGreaterThan(0);
     });
 
     it('should generate different prices for same symbol (momentum)', async () => {

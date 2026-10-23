@@ -28,8 +28,16 @@ export class MarketUpdateWriterService {
 
   async persist(updates: MarketRefreshUpdate[], providerName: string) {
     const stockOperations: AnyBulkWriteOperation[] = [];
-    const snapshots: Array<{ symbol: string; price: number; source: string }> =
-      [];
+    const snapshots: Array<{
+      symbol: string;
+      price: number;
+      open: number;
+      high: number;
+      low: number;
+      close: number;
+      volume?: number;
+      source: string;
+    }> = [];
 
     for (const update of updates) {
       stockOperations.push(this.buildStockOperation(update, providerName));
@@ -38,6 +46,11 @@ export class MarketUpdateWriterService {
         snapshots.push({
           symbol: update.quote.symbol,
           price: update.quote.price,
+          open: update.quote.open ?? update.quote.price,
+          high: update.quote.high ?? update.quote.price,
+          low: update.quote.low ?? update.quote.price,
+          close: update.quote.close ?? update.quote.price,
+          volume: update.quote.volume,
           source: update.quote.source ?? providerName,
         });
       }

@@ -69,11 +69,19 @@ export class MockMarketDataProvider implements MarketDataProvider {
 
     const stock = this.mockStocks.get(upperSymbol)!;
 
+    const open = stock.price;
+
     // Generate next price using momentum algorithm
     const nextPrice = this.generateNextPrice({
       symbol: upperSymbol,
-      close: stock.price,
+      close: open,
     } as Pick<StockDocument, 'symbol' | 'close'>);
+
+    const wickFactor = 0.0004 + Math.random() * 0.0012;
+    const high = Number((Math.max(open, nextPrice) * (1 + wickFactor)).toFixed(2));
+    const low = Number((Math.min(open, nextPrice) * (1 - wickFactor)).toFixed(2));
+    const movement = Math.abs(nextPrice - open) / Math.max(open, 1);
+    const volume = Math.round(18000 + movement * 8_000_000 + Math.random() * 14000);
 
     // Update internal price
     stock.price = nextPrice;
@@ -85,7 +93,11 @@ export class MockMarketDataProvider implements MarketDataProvider {
     return {
       symbol: upperSymbol,
       price: nextPrice,
+      open,
+      high,
+      low,
       close: nextPrice,
+      volume,
       currency: stock.currency,
       timestamp: new Date(),
       exchange: 'MOCK',

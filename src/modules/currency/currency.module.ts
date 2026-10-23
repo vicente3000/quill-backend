@@ -10,6 +10,7 @@ import { MockCurrencyDataProvider } from './infrastructure/providers/mock-curren
 import { NoneCurrencyDataProvider } from './infrastructure/providers/none-currency-data.provider';
 import { FallbackCurrencyDataProvider } from './infrastructure/providers/fallback-currency-data.provider';
 import { CurrencyProviderFactory } from './infrastructure/providers/currency-provider.factory';
+import { YahooFinanceCurrencyDataProvider } from './infrastructure/providers/yahoo-finance-currency-data.provider';
 import { GBMMarketSimulationStrategy } from '../common/strategies/gbm-market-simulation.strategy';
 import { FlatMarketSimulationStrategy } from '../common/strategies/flat-market-simulation.strategy';
 import { NoiseWaveSimulationStrategy } from '../common/strategies/nw-simulation.strategy';
@@ -27,12 +28,14 @@ import { AdminConfigService } from '../admin/application/services/admin-config.s
     CurrencyTickService,
     MockCurrencyDataProvider,
     ExchangeRateCurrencyDataProvider,
+    YahooFinanceCurrencyDataProvider,
     NoneCurrencyDataProvider,
     {
       provide: 'CURRENCY_DATA_PROVIDER',
       inject: [
         MockCurrencyDataProvider,
         ExchangeRateCurrencyDataProvider,
+        YahooFinanceCurrencyDataProvider,
         NoneCurrencyDataProvider,
         ConfigService,
         AdminConfigService,
@@ -40,6 +43,7 @@ import { AdminConfigService } from '../admin/application/services/admin-config.s
       useFactory: async (
         mockProvider: MockCurrencyDataProvider,
         exchangeRateProvider: ExchangeRateCurrencyDataProvider,
+        yahooProvider: YahooFinanceCurrencyDataProvider,
         noneProvider: NoneCurrencyDataProvider,
         configService: ConfigService,
         adminConfigService: AdminConfigService,
@@ -50,17 +54,19 @@ import { AdminConfigService } from '../admin/application/services/admin-config.s
           ? adminConfigProviderName
           : configService.get<string>('CURRENCY_PROVIDER', 'mock');
 
-        if (providerName === 'exchangeRate') {
-          return new FallbackCurrencyDataProvider(
-            exchangeRateProvider,
-            mockProvider,
-          );
+        if (providerName === 'exchangeRate' || providerName === 'yahoo') {
+          const primary =
+            providerName === 'exchangeRate'
+              ? exchangeRateProvider
+              : yahooProvider;
+          return new FallbackCurrencyDataProvider(primary, mockProvider);
         }
 
         return CurrencyProviderFactory.createProvider(
           providerName,
           mockProvider,
           exchangeRateProvider,
+          yahooProvider,
           noneProvider,
         );
       },

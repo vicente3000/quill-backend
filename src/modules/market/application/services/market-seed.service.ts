@@ -1,17 +1,11 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
-import Decimal from 'decimal.js';
 import { Model } from 'mongoose';
 import type {
   MarketDataProvider,
   StockSeed,
 } from '../../infrastructure/providers/market-data-provider.interface';
 import { seedStocks } from '../../domain/constants/seed-stocks';
-import {
-  PriceSnapshot,
-  PriceSnapshotDocument,
-} from '../../infrastructure/schemas/price-snapshot.schema';
 import {
   Stock,
   StockDocument,
@@ -29,11 +23,8 @@ export class MarketSeedService {
   constructor(
     @InjectModel(Stock.name)
     private readonly stockModel: Model<StockDocument>,
-    @InjectModel(PriceSnapshot.name)
-    private readonly snapshotModel: Model<PriceSnapshotDocument>,
     @Inject('MARKET_DATA_PROVIDER')
     private readonly provider: MarketDataProvider,
-    private readonly configService: ConfigService,
   ) {}
 
   async seedInitialStocks(): Promise<void> {
@@ -65,17 +56,9 @@ export class MarketSeedService {
 
     const stocks = this.prepareSeedDocuments(missingStocks);
     await this.stockModel.insertMany(stocks);
-
-    // Persist initial mock snapshots so the provider has historical data
-    if (this.provider.getName().toLowerCase() === 'mock') {
-      const now = Date.now();
-      await this.snapshotModel.insertMany(this.buildMockSnapshots(stocks, now));
-      this.logger.log('Initial market seeded with example data.');
-    } else {
-      this.logger.log(
-        'Placeholder records created. Initial capture will run on next refresh.',
-      );
-    }
+    this.logger.log(
+      'Market symbols created. Price history will accumulate from live captures.',
+    );
   }
 
   /**
@@ -126,29 +109,4 @@ export class MarketSeedService {
     }));
   }
 
-  /**
-   * Generates historical mock snapshots for initial market visualization.
-   */
-  private buildMockSnapshots(
-    stocks: Array<{ symbol: string; close: number }>,
-    now: number,
-  ) {
-    return stocks.flatMap((stock) =>
-      Array.from({ length: 24 }, (_, index) => {
-        const factor = new Decimal(1).plus(
-          new Decimal(index - 12).times(0.0015),
-        );
-
-        return {
-          symbol: stock.symbol,
-          source: 'mock',
-          price: new Decimal(stock.close)
-            .times(factor)
-            .toDecimalPlaces(2)
-            .toNumber(),
-          createdAt: new Date(now - (24 - index) * 60 * 60 * 1000),
-        };
-      }),
-    );
-  }
 }

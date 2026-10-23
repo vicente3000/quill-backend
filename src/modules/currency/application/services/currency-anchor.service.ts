@@ -80,18 +80,14 @@ export class CurrencyAnchorService implements OnModuleInit, OnModuleDestroy {
         const quote = await this.provider.getQuote(symbol);
         const anchorPrice = quote.close ?? quote.price;
 
-        await this.cacheService.set(BASE_PRICE_KEY(symbol), anchorPrice);
-
-        const existingLive = await this.cacheService.get<number>(
-          LIVE_PRICE_KEY(symbol),
-        );
-        if (existingLive == null) {
-          await this.cacheService.set(
+        await Promise.all([
+          this.cacheService.set(BASE_PRICE_KEY(symbol), anchorPrice),
+          this.cacheService.set(
             LIVE_PRICE_KEY(symbol),
             anchorPrice,
             LIVE_PRICE_CACHE_TTL_MS,
-          );
-        }
+          ),
+        ]);
 
         this.logger.debug(`Anchor updated for ${symbol}: ${anchorPrice}`);
       } catch (error) {

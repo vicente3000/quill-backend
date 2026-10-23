@@ -90,7 +90,13 @@ Deben conectarse al backend mediante la URL publicada para el entorno.
 | `JWT_SECRET` | Secreto JWT largo, aleatorio y privado; reemplazar siempre el placeholder de `.env.example` |
 | `INITIAL_BALANCE` | Saldo ficticio inicial |
 | `COMMISSION_RATE` | Tasa de comisión |
-| `MARKET_PROVIDER` | `mock` (default) o `eodhd` |
+| `MARKET_PROVIDER` | `mock` (entorno simulado), `yahoo` (datos indicativos sin clave) o `eodhd` |
+
+El entorno local usa `mock` para simular acciones y USD/CLP sin depender de
+servicios externos. La integracion con `yahoo` sigue disponible como opcion para
+consultar precios indicativos y potencialmente retrasados sin una API key. Yahoo
+Finance no ofrece una API publica con SLA: esa integracion es apropiada para
+demostracion y pruebas, no para ejecutar operaciones financieras reales.
 
 Ver `.env.example` para lista completa.
 

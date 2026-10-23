@@ -177,7 +177,9 @@ describe('MarketService', () => {
   });
 
   it('obtiene el historial de precios en orden cronologico', async () => {
-    const stockExec = jest.fn().mockResolvedValue({ symbol: 'AAPL' });
+    const stockExec = jest
+      .fn()
+      .mockResolvedValue({ symbol: 'AAPL', source: 'yahoo' });
     const stockLean = jest.fn().mockReturnValue({ exec: stockExec });
     stockModel.findOne.mockReturnValue({ lean: stockLean });
 
@@ -194,6 +196,10 @@ describe('MarketService', () => {
     const result = await service.getPriceHistory('aapl', 3);
 
     expect(stockModel.findOne).toHaveBeenCalledWith({ symbol: 'AAPL' });
+    expect(snapshotModel.find).toHaveBeenCalledWith({
+      symbol: 'AAPL',
+      source: 'yahoo',
+    });
     expect(sort).toHaveBeenCalledWith({ createdAt: -1 });
     expect(limit).toHaveBeenCalledWith(3);
     expect(result).toEqual([

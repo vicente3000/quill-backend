@@ -62,7 +62,7 @@ export class MarketController {
   @Get('stocks/:symbol/history')
   getHistory(
     @Param('symbol') symbol: string,
-    @Query('limit', new ParseLimitPipe(24, 200)) limit: number,
+    @Query('limit', new ParseLimitPipe(96, 1000)) limit: number,
   ) {
     return this.marketService.getPriceHistory(symbol, limit);
   }

@@ -42,7 +42,16 @@ describe('MarketUpdateWriterService', () => {
     await service.persist([update], 'eodhd');
 
     expect(snapshotModel.insertMany).toHaveBeenCalledWith([
-      { symbol: 'COPEC.SN', price: 120, source: 'eodhd' },
+      {
+        symbol: 'COPEC.SN',
+        price: 120,
+        open: 120,
+        high: 120,
+        low: 120,
+        close: 120,
+        volume: undefined,
+        source: 'eodhd',
+      },
     ]);
     const calls = stockModel.bulkWrite.mock.calls as unknown as Array<
       [

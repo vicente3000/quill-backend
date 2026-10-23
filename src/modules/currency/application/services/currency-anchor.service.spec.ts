@@ -135,7 +135,7 @@ describe('CurrencyAnchorService', () => {
       );
     });
 
-    it('does not overwrite existing live price', async () => {
+    it('replaces an existing live price with the refreshed external anchor', async () => {
       provider.getSymbols.mockReturnValue(['EURUSD']);
       provider.getQuote.mockResolvedValue({ close: 1.15 });
       cacheService.get.mockResolvedValue(1.12);
@@ -146,9 +146,10 @@ describe('CurrencyAnchorService', () => {
         'forex:EURUSD:base_price',
         1.15,
       );
-      expect(cacheService.set).not.toHaveBeenCalledWith(
+      expect(cacheService.set).toHaveBeenCalledWith(
         'forex:EURUSD:live_price',
         1.15,
+        60_000,
       );
     });
 

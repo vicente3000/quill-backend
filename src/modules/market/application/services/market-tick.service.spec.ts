@@ -11,6 +11,7 @@ describe('MarketTickService', () => {
   let service: MarketTickService;
   let internals: MarketTickInternals;
   let stockModel: { find: jest.Mock };
+  let snapshotModel: { insertMany: jest.Mock };
   let strategy: { calculateNextTick: jest.Mock };
   let cacheService: { get: jest.Mock; set: jest.Mock };
   let eventEmitter: { emit: jest.Mock };
@@ -27,12 +28,14 @@ describe('MarketTickService', () => {
 
   beforeEach(() => {
     stockModel = { find: jest.fn() };
+    snapshotModel = { insertMany: jest.fn().mockResolvedValue([]) };
     strategy = { calculateNextTick: jest.fn() };
     cacheService = { get: jest.fn(), set: jest.fn() };
     eventEmitter = { emit: jest.fn() };
 
     service = new MarketTickService(
       stockModel as never,
+      snapshotModel as never,
       strategy as never,
       cacheService as never,
       eventEmitter as never as EventEmitter2,
@@ -104,6 +107,24 @@ describe('MarketTickService', () => {
         expect.objectContaining({ symbol: 'AAPL', close: 105 }),
         expect.objectContaining({ symbol: 'GOOGL', close: 1850 }),
       ]);
+      expect(snapshotModel.insertMany).toHaveBeenCalledWith([
+        expect.objectContaining({
+          symbol: 'AAPL',
+          open: 102,
+          high: 105,
+          low: 102,
+          close: 105,
+          source: 'simulation',
+        }),
+        expect.objectContaining({
+          symbol: 'GOOGL',
+          open: 1820,
+          high: 1850,
+          low: 1820,
+          close: 1850,
+          source: 'simulation',
+        }),
+      ]);
     });
 
     it('skips stocks with missing cache data', async () => {
@@ -123,6 +144,7 @@ describe('MarketTickService', () => {
       await service.processTick();
 
       expect(strategy.calculateNextTick).not.toHaveBeenCalled();
+      expect(snapshotModel.insertMany).not.toHaveBeenCalled();
       expect(eventEmitter.emit).not.toHaveBeenCalled();
     });
 

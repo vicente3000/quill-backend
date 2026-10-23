@@ -9,7 +9,7 @@ export class NoneMarketDataProvider implements MarketDataProvider {
   getQuote(symbol: string): Promise<MarketQuote> {
     return Promise.reject(
       new Error(
-        `No hay datos configurados para ${symbol}. Establezca MARKET_PROVIDER=mock o MARKET_PROVIDER=eodhd en el archivo .env`,
+        `No hay datos configurados para ${symbol}. Establezca MARKET_PROVIDER=mock, MARKET_PROVIDER=eodhd o MARKET_PROVIDER=yahoo en el archivo .env`,
       ),
     );
   }

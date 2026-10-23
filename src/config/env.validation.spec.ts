@@ -34,6 +34,16 @@ describe('envValidationSchema', () => {
     expect(result.error?.message).toContain('EODHD_API_KEY');
   });
 
+  it('acepta proveedores Yahoo sin API key', () => {
+    const result = envValidationSchema.validate({
+      ...baseEnv,
+      MARKET_PROVIDER: 'yahoo',
+      CURRENCY_PROVIDER: 'yahoo',
+    });
+
+    expect(result.error).toBeUndefined();
+  });
+
   it('rechaza secretos JWT inseguros en produccion', () => {
     const result = envValidationSchema.validate({
       ...baseEnv,

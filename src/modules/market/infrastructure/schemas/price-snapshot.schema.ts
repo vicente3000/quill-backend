@@ -14,6 +14,21 @@ export class PriceSnapshot {
   @Prop({ required: true })
   price!: number;
 
+  @Prop()
+  open?: number;
+
+  @Prop()
+  high?: number;
+
+  @Prop()
+  low?: number;
+
+  @Prop()
+  close?: number;
+
+  @Prop()
+  volume?: number;
+
   @Prop({ default: 'mock' })
   source?: string;
 

@@ -122,10 +122,10 @@ export class MarketService implements OnModuleInit {
   }
 
   async getPriceHistory(symbol: string, limit = 24) {
-    await this.getQuote(symbol);
+    const stock = await this.getQuote(symbol);
 
     const snapshots = await this.snapshotModel
-      .find({ symbol: symbol.toUpperCase() })
+      .find({ symbol: symbol.toUpperCase(), source: stock.source })
       .sort({ createdAt: -1 })
       .limit(limit)
       .lean()
@@ -218,6 +218,10 @@ export class MarketService implements OnModuleInit {
     await this.snapshotModel.create({
       symbol: upper,
       price,
+      open: previousClose,
+      high: Math.max(previousClose, price),
+      low: Math.min(previousClose, price),
+      close: price,
       source: 'admin',
     });
 
@@ -271,6 +275,11 @@ export class MarketService implements OnModuleInit {
     await this.snapshotModel.create({
       symbol: upper,
       price: dto.close,
+      open: dto.close,
+      high: dto.close,
+      low: dto.close,
+      close: dto.close,
+      volume: 0,
       source: 'admin',
     });
 

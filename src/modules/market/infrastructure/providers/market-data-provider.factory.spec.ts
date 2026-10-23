@@ -3,10 +3,12 @@ import { EodhdMarketDataProvider } from './eodhd-market-data.provider';
 import { MockMarketDataProvider } from './mock-market-data.provider';
 import { NoneMarketDataProvider } from './none-market-data.provider';
 import { ConfigService } from '@nestjs/config';
+import { YahooFinanceMarketDataProvider } from './yahoo-finance-market-data.provider';
 
 describe('ProviderFactory', () => {
   let mockProvider: MockMarketDataProvider;
   let eodhdProvider: EodhdMarketDataProvider;
+  let yahooProvider: YahooFinanceMarketDataProvider;
   let noneProvider: NoneMarketDataProvider;
   let configService: ConfigService;
   let stockModel: { find: jest.Mock };
@@ -23,6 +25,9 @@ describe('ProviderFactory', () => {
     );
 
     eodhdProvider = { getName: () => 'EODHD' } as EodhdMarketDataProvider;
+    yahooProvider = {
+      getName: () => 'YahooFinance',
+    } as YahooFinanceMarketDataProvider;
     noneProvider = new NoneMarketDataProvider();
   });
 
@@ -31,6 +36,7 @@ describe('ProviderFactory', () => {
       'mock',
       mockProvider,
       eodhdProvider,
+      yahooProvider,
       noneProvider,
     );
 
@@ -43,6 +49,7 @@ describe('ProviderFactory', () => {
       '',
       mockProvider,
       eodhdProvider,
+      yahooProvider,
       noneProvider,
     );
 
@@ -55,6 +62,7 @@ describe('ProviderFactory', () => {
       undefined,
       mockProvider,
       eodhdProvider,
+      yahooProvider,
       noneProvider,
     );
 
@@ -68,6 +76,7 @@ describe('ProviderFactory', () => {
         'invalid',
         mockProvider,
         eodhdProvider,
+        yahooProvider,
         noneProvider,
       ),
     ).toThrow('Unknown market provider');
@@ -78,6 +87,7 @@ describe('ProviderFactory', () => {
       'eodhd',
       mockProvider,
       eodhdProvider,
+      yahooProvider,
       noneProvider,
     );
 
@@ -90,16 +100,30 @@ describe('ProviderFactory', () => {
       'MOCK',
       mockProvider,
       eodhdProvider,
+      yahooProvider,
       noneProvider,
     );
     const provider2 = MarketDataProviderFactory.createProvider(
       'MoCk',
       mockProvider,
       eodhdProvider,
+      yahooProvider,
       noneProvider,
     );
 
     expect(provider1).toBe(mockProvider);
     expect(provider2).toBe(mockProvider);
+  });
+
+  it('should create YahooFinanceMarketDataProvider when "yahoo" is requested', () => {
+    const provider = MarketDataProviderFactory.createProvider(
+      'yahoo',
+      mockProvider,
+      eodhdProvider,
+      yahooProvider,
+      noneProvider,
+    );
+
+    expect(provider).toBe(yahooProvider);
   });
 });
