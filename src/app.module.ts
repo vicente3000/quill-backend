@@ -8,6 +8,7 @@ import { normalizeMongoDbUri } from './config/normalize-mongodb-uri';
 import { envValidationSchema } from './config/env.validation';
 import { AdminModule } from './modules/admin/admin.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ContestsModule } from './modules/contests/contests.module';
 import { CurrencyModule } from './modules/currency/currency.module';
 import { MarketModule } from './modules/market/market.module';
 import { OrdersModule } from './modules/orders/orders.module';
@@ -41,6 +42,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     AdminModule,
     AuthModule,
+    ContestsModule,
     CurrencyModule,
     MarketModule,
     PortfolioModule,
