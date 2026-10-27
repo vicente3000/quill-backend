@@ -13,8 +13,12 @@ function getLogger(filter: HttpExceptionFilter): Logger {
 
 describe('HttpExceptionFilter', () => {
   let filter: HttpExceptionFilter;
-  let mockResponse: { status: jest.Mock; json: jest.Mock };
-  let mockRequest: { url: string };
+  let mockResponse: {
+    status: jest.Mock;
+    json: jest.Mock;
+    setHeader: jest.Mock;
+  };
+  let mockRequest: { url: string; headers: Record<string, string> };
   let mockHost: ArgumentsHost;
 
   beforeEach(() => {
@@ -22,8 +26,9 @@ describe('HttpExceptionFilter', () => {
     mockResponse = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
+      setHeader: jest.fn(),
     };
-    mockRequest = { url: '/test' };
+    mockRequest = { url: '/test', headers: {} };
     mockHost = {
       switchToHttp: jest.fn().mockReturnValue({
         getResponse: jest.fn().mockReturnValue(mockResponse),
@@ -129,6 +134,35 @@ describe('HttpExceptionFilter', () => {
       expect.objectContaining({
         message: 'Ha ocurrido un error inesperado.',
       }),
+    );
+  });
+
+  it('maps duplicate database errors without leaking database details', () => {
+    filter.catch(
+      { code: 11000, keyValue: { email: 'secret@example.com' } },
+      mockHost,
+    );
+
+    expect(mockResponse.status).toHaveBeenCalledWith(409);
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        code: 'DUPLICATE_RESOURCE',
+        message: 'Ya existe un recurso con esos datos.',
+      }),
+    );
+  });
+
+  it('propagates a safe request id for operational tracing', () => {
+    mockRequest.headers['x-request-id'] = 'request-123';
+
+    filter.catch(new BadRequestException('bad input'), mockHost);
+
+    expect(mockResponse.setHeader).toHaveBeenCalledWith(
+      'X-Request-Id',
+      'request-123',
+    );
+    expect(mockResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({ requestId: 'request-123' }),
     );
   });
 });

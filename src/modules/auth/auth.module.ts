@@ -29,6 +29,6 @@ import { createAuthThrottlerOptions } from './infrastructure/config/auth-throttl
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
-  exports: [AuthService],
+  exports: [AuthService, ThrottlerModule],
 })
 export class AuthModule {}

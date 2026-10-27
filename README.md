@@ -74,23 +74,23 @@ Deben conectarse al backend mediante la URL publicada para el entorno.
 
 ## Scripts
 
-| Comando | Descripción |
-|---------|-------------|
-| `npm run start:dev` | Desarrollo |
-| `npm run build` | Build |
-| `npm test` | Tests unitarios |
-| `npm run test:e2e` | Tests e2e |
-| `npm run lint` | Linter |
+| Comando             | Descripción     |
+| ------------------- | --------------- |
+| `npm run start:dev` | Desarrollo      |
+| `npm run build`     | Build           |
+| `npm test`          | Tests unitarios |
+| `npm run test:e2e`  | Tests e2e       |
+| `npm run lint`      | Linter          |
 
 ## Variables de entorno principales
 
-| Variable | Descripción |
-|----------|-------------|
-| `MONGODB_URI` | Conexión MongoDB (requiere replica set) |
-| `JWT_SECRET` | Secreto JWT largo, aleatorio y privado; reemplazar siempre el placeholder de `.env.example` |
-| `INITIAL_BALANCE` | Saldo ficticio inicial |
-| `COMMISSION_RATE` | Tasa de comisión |
-| `MARKET_PROVIDER` | `mock` (entorno simulado), `yahoo` (datos indicativos sin clave) o `eodhd` |
+| Variable          | Descripción                                                                                 |
+| ----------------- | ------------------------------------------------------------------------------------------- |
+| `MONGODB_URI`     | Conexión MongoDB (requiere replica set)                                                     |
+| `JWT_SECRET`      | Secreto JWT largo, aleatorio y privado; reemplazar siempre el placeholder de `.env.example` |
+| `INITIAL_BALANCE` | Saldo ficticio inicial                                                                      |
+| `COMMISSION_RATE` | Tasa de comisión                                                                            |
+| `MARKET_PROVIDER` | `mock` (entorno simulado), `yahoo` (datos indicativos sin clave) o `eodhd`                  |
 
 El entorno local usa `mock` para simular acciones y USD/CLP sin depender de
 servicios externos. La integracion con `yahoo` sigue disponible como opcion para
@@ -105,6 +105,7 @@ Ver `.env.example` para lista completa.
 - [Arquitectura](./docs/architecture.md)
 - [Backend](./docs/backend/README.md)
 - [Flujo de datos](./docs/flow.md)
+- [API y reglas de torneos](./docs/tournaments-api.md)
 
 ## Funcionalidades
 
@@ -115,9 +116,11 @@ Ver `.env.example` para lista completa.
 - Portafolio, órdenes abiertas y operaciones recientes
 - WebSockets en tiempo real
 - Tema claro/oscuro
+- Torneos administrados por profesores, cuentas aisladas y rankings finales
 
 ## Limitaciones (MVP)
 
 - Proveedor de mercado simulado por defecto (sin broker real)
-- Sin panel administrativo, alertas, watchlists, stop loss/take profit
+- La interfaz web de administracion de torneos aun debe consumir la nueva API
+- Sin alertas, stop loss ni take profit
 - Web responsive sin capa móvil nativa

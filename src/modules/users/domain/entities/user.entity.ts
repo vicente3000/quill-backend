@@ -1,4 +1,4 @@
-import type { UserRole } from '../../../../common/types/role.type';
+import type { AccountType, UserRole } from '../../../../common/types/role.type';
 
 export interface UserEntity {
   id: string;
@@ -6,6 +6,7 @@ export interface UserEntity {
   email: string;
   passwordHash: string;
   role: UserRole;
+  accountType: AccountType;
   availableBalance: number;
   reservedBalance: number;
   username?: string;

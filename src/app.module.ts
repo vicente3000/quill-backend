@@ -16,6 +16,7 @@ import { RealtimeModule } from './modules/realtime/realtime.module';
 import { SystemModule } from './modules/system/system.module';
 import { TradesModule } from './modules/trades/trades.module';
 import { UsersModule } from './modules/users/users.module';
+import { TournamentsModule } from './modules/tournaments/tournaments.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { UsersModule } from './modules/users/users.module';
     RealtimeModule,
     TradesModule,
     OrdersModule,
+    TournamentsModule,
   ],
   providers: [],
 })

@@ -39,6 +39,18 @@ import {
   Trade,
   TradeSchema,
 } from '../trades/infrastructure/schemas/trade.schema';
+import {
+  TournamentOrder,
+  TournamentOrderSchema,
+} from '../tournaments/infrastructure/schemas/tournament-order.schema';
+import {
+  TournamentPosition,
+  TournamentPositionSchema,
+} from '../tournaments/infrastructure/schemas/tournament-position.schema';
+import {
+  TournamentTrade,
+  TournamentTradeSchema,
+} from '../tournaments/infrastructure/schemas/tournament-trade.schema';
 
 @Module({
   imports: [
@@ -48,6 +60,9 @@ import {
       { name: Order.name, schema: OrderSchema },
       { name: Position.name, schema: PositionSchema },
       { name: Trade.name, schema: TradeSchema },
+      { name: TournamentOrder.name, schema: TournamentOrderSchema },
+      { name: TournamentPosition.name, schema: TournamentPositionSchema },
+      { name: TournamentTrade.name, schema: TournamentTradeSchema },
     ]),
     CommonStrategiesModule,
   ],

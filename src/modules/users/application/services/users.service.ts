@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -24,6 +25,11 @@ function generateUsername(): string {
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
+}
+
+function getAccountType(email: string): 'ucn' | 'external' {
+  const domain = email.split('@')[1] ?? '';
+  return domain === 'ucn.cl' || domain.endsWith('.ucn.cl') ? 'ucn' : 'external';
 }
 
 function getDuplicateUserField(error: unknown): 'email' | 'username' | null {
@@ -49,7 +55,7 @@ function getDuplicateUserField(error: unknown): 'email' | 'username' | null {
 const MAX_WATCHLIST_SYMBOLS = 50;
 
 @Injectable()
-export class UsersService {
+export class UsersService implements OnModuleInit {
   constructor(
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
@@ -60,6 +66,20 @@ export class UsersService {
     private readonly configService: ConfigService,
     private readonly adminConfigService: AdminConfigService,
   ) {}
+
+  async onModuleInit(): Promise<void> {
+    await this.userModel.updateMany(
+      {
+        accountType: { $exists: false },
+        email: { $regex: /@(?:[a-z0-9-]+\.)*ucn\.cl$/i },
+      },
+      { $set: { accountType: 'ucn' } },
+    );
+    await this.userModel.updateMany(
+      { accountType: { $exists: false } },
+      { $set: { accountType: 'external' } },
+    );
+  }
 
   async createUser(input: {
     fullName: string;
@@ -97,6 +117,7 @@ export class UsersService {
       return await this.userModel.create({
         fullName: input.fullName,
         email: normalizedEmail,
+        accountType: getAccountType(normalizedEmail),
         passwordHash: input.passwordHash,
         username: username.toLowerCase(),
         availableBalance: initialBalance,
@@ -433,6 +454,7 @@ export class UsersService {
       fullName: user.fullName,
       email: user.email,
       role: user.role,
+      accountType: user.accountType ?? getAccountType(user.email),
       username: user.username ?? null,
       availableBalance: user.availableBalance,
       reservedBalance: user.reservedBalance,

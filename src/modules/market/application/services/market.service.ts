@@ -5,6 +5,7 @@ import {
   Logger,
   NotFoundException,
   OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -23,6 +24,18 @@ import { CacheService } from '../../../system/application/services/cache/cache.s
 import { MarketRefreshService } from './market-refresh.service';
 import { MarketSeedService } from './market-seed.service';
 import Decimal from 'decimal.js';
+import {
+  TournamentOrder,
+  TournamentOrderDocument,
+} from '../../../tournaments/infrastructure/schemas/tournament-order.schema';
+import {
+  TournamentPosition,
+  TournamentPositionDocument,
+} from '../../../tournaments/infrastructure/schemas/tournament-position.schema';
+import {
+  TournamentTrade,
+  TournamentTradeDocument,
+} from '../../../tournaments/infrastructure/schemas/tournament-trade.schema';
 import {
   Order,
   OrderDocument,
@@ -69,6 +82,15 @@ export class MarketService implements OnModuleInit {
     private readonly marketSeedService: MarketSeedService,
     private readonly cacheService: CacheService,
     private readonly eventEmitter: EventEmitter2,
+    @Optional()
+    @InjectModel(TournamentOrder.name)
+    private readonly tournamentOrderModel?: Model<TournamentOrderDocument>,
+    @Optional()
+    @InjectModel(TournamentPosition.name)
+    private readonly tournamentPositionModel?: Model<TournamentPositionDocument>,
+    @Optional()
+    @InjectModel(TournamentTrade.name)
+    private readonly tournamentTradeModel?: Model<TournamentTradeDocument>,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -333,8 +355,30 @@ export class MarketService implements OnModuleInit {
           .exists({ symbol: upper })
           .session(session)
           .exec();
+        const [tournamentOrder, tournamentPosition, tournamentTrade] =
+          await Promise.all([
+            this.tournamentOrderModel
+              ?.exists({ symbol: upper })
+              .session(session)
+              .exec(),
+            this.tournamentPositionModel
+              ?.exists({ symbol: upper })
+              .session(session)
+              .exec(),
+            this.tournamentTradeModel
+              ?.exists({ symbol: upper })
+              .session(session)
+              .exec(),
+          ]);
 
-        if (pendingOrder || position || trade) {
+        if (
+          pendingOrder ||
+          position ||
+          trade ||
+          tournamentOrder ||
+          tournamentPosition ||
+          tournamentTrade
+        ) {
           throw new ConflictException(
             `Stock "${upper}" posee referencias financieras y no puede eliminarse.`,
           );

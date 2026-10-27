@@ -28,12 +28,12 @@ export class RolesGuard implements CanActivate {
     const user = request.user;
 
     if (!user || !user.role) {
-      throw new ForbiddenException('Solo administradores.');
+      throw new ForbiddenException('No tienes permisos para esta operacion.');
     }
 
     const hasRole = requiredRoles.includes(user.role);
     if (!hasRole) {
-      throw new ForbiddenException('Solo administradores.');
+      throw new ForbiddenException('No tienes permisos para esta operacion.');
     }
 
     return true;
