@@ -15,9 +15,21 @@ export interface ContestEntity {
   mode: ContestMode;
   allowedAccountTypes: ContestAccountType[];
   status: ContestStatus;
+  participantsCount: number;
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export type ContestSummaryEntity = Omit<
+  ContestEntity,
+  'createdBy' | 'createdAt' | 'updatedAt'
+> & { isEnrolled: boolean };
+
+export interface ContestEnrollmentEntity {
+  contestId: string;
+  userId: string;
+  joinedAt: Date;
 }
 
 export function deriveContestStatus(

@@ -31,6 +31,10 @@ const leanQuery = <T>(value: T) => {
   return query;
 };
 
+const execQuery = <T>(value: T) => ({
+  exec: jest.fn().mockResolvedValue(value),
+});
+
 describe('ContestsService', () => {
   let service: ContestsService;
   let contestModel: {
@@ -38,11 +42,16 @@ describe('ContestsService', () => {
     find: jest.Mock;
     findById: jest.Mock;
   };
+  let participantModel: { aggregate: jest.Mock; countDocuments: jest.Mock };
 
   beforeEach(() => {
     jest.useFakeTimers({ now: new Date('2026-11-15T00:00:00.000Z') });
     contestModel = { create: jest.fn(), find: jest.fn(), findById: jest.fn() };
-    service = new ContestsService(contestModel as never);
+    participantModel = { aggregate: jest.fn(), countDocuments: jest.fn() };
+    service = new ContestsService(
+      contestModel as never,
+      participantModel as never,
+    );
   });
 
   afterEach(() => {
@@ -82,6 +91,7 @@ describe('ContestsService', () => {
         mode: record.mode,
         allowedAccountTypes: record.allowedAccountTypes,
         status: 'ACTIVE',
+        participantsCount: 0,
         createdBy: adminId,
         createdAt: record.createdAt,
         updatedAt: record.updatedAt,
@@ -101,6 +111,7 @@ describe('ContestsService', () => {
       });
       const query = leanQuery([upcoming, finished]);
       contestModel.find.mockReturnValue(query);
+      participantModel.aggregate.mockReturnValue(execQuery([]));
 
       const result = await service.findAll();
 
@@ -111,8 +122,28 @@ describe('ContestsService', () => {
       ]);
     });
 
+    it('incluye participantsCount con una sola agregación', async () => {
+      const withParticipants = buildRecord();
+      const withoutParticipants = buildRecord();
+      contestModel.find.mockReturnValue(
+        leanQuery([withParticipants, withoutParticipants]),
+      );
+      participantModel.aggregate.mockReturnValue(
+        execQuery([{ _id: withParticipants._id, count: 3 }]),
+      );
+
+      const result = await service.findAll();
+
+      expect(participantModel.aggregate).toHaveBeenCalledTimes(1);
+      expect(participantModel.countDocuments).not.toHaveBeenCalled();
+      expect(result.map((contest) => contest.participantsCount)).toEqual([
+        3, 0,
+      ]);
+    });
+
     it('devuelve una lista vacía si no hay concursos', async () => {
       contestModel.find.mockReturnValue(leanQuery([]));
+      participantModel.aggregate.mockReturnValue(execQuery([]));
 
       await expect(service.findAll()).resolves.toEqual([]);
     });
@@ -122,11 +153,16 @@ describe('ContestsService', () => {
     it('devuelve el concurso encontrado', async () => {
       const record = buildRecord();
       contestModel.findById.mockReturnValue(leanQuery(record));
+      participantModel.countDocuments.mockReturnValue(execQuery(5));
 
       const result = await service.findOne(record._id.toString());
 
       expect(contestModel.findById).toHaveBeenCalledWith(record._id.toString());
+      expect(participantModel.countDocuments).toHaveBeenCalledWith({
+        contestId: record._id,
+      });
       expect(result.id).toBe(record._id.toString());
+      expect(result.participantsCount).toBe(5);
     });
 
     it('lanza NotFoundException si no existe', async () => {
